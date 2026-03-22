@@ -219,8 +219,8 @@ import plantuml from './markdown/plantuml'
 // Prism (Syntax Highlighting)
 import Prism from 'prismjs'
 
-// Mermaid
-import mermaid from 'mermaid'
+// Mermaid — loaded globally via script tag (self-hosted v11 bundle)
+// import mermaid from 'mermaid' // REMOVED: was Mermaid 8 bundled import
 
 // Helpers
 import katexHelper from './common/katex'
@@ -585,14 +585,21 @@ export default {
         this.cm.refresh()
       })
     },
-    renderMermaidDiagrams () {
-      document.querySelectorAll('.editor-markdown-preview pre.codeblock-mermaid > code').forEach(elm => {
+    async renderMermaidDiagrams () {
+      if (typeof window.mermaid === 'undefined') return
+      const elms = document.querySelectorAll('.editor-markdown-preview pre.codeblock-mermaid > code')
+      for (const elm of elms) {
         mermaidId++
         const mermaidDef = elm.innerText
-        const mmElm = document.createElement('div')
-        mmElm.innerHTML = `<div id="mermaid-id-${mermaidId}">${mermaid.render(`mermaid-id-${mermaidId}`, mermaidDef)}</div>`
-        elm.parentElement.replaceWith(mmElm)
-      })
+        try {
+          const { svg } = await window.mermaid.render(`mermaid-id-${mermaidId}`, mermaidDef)
+          const mmElm = document.createElement('div')
+          mmElm.innerHTML = svg
+          elm.parentElement.replaceWith(mmElm)
+        } catch (e) {
+          console.warn('Mermaid render error:', e)
+        }
+      }
     },
     autocomplete (cm, change) {
       if (cm.getModeAt(cm.getCursor()).name !== 'markdown') {
@@ -731,11 +738,13 @@ export default {
       this.$store.set('editor/content', '# Header\nYour content here')
     }
 
-    // Initialize Mermaid API
-    mermaid.initialize({
-      startOnLoad: false,
-      theme: this.$vuetify.theme.dark ? `dark` : `default`
-    })
+    // Initialize Mermaid API (self-hosted v11 global)
+    if (typeof window.mermaid !== 'undefined') {
+      window.mermaid.initialize({
+        startOnLoad: false,
+        theme: this.$vuetify.theme.dark ? `dark` : `default`
+      })
+    }
 
     // Initialize CodeMirror
 
