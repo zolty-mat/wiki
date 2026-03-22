@@ -1,0 +1,64 @@
+name: Build & Push to Harbor
+
+on:
+  push:
+    branches:
+      - zolty/main
+      - zolty/*
+  workflow_dispatch:
+
+env:
+  HARBOR_REGISTRY: harbor.k3s.internal.strommen.systems
+  HARBOR_PROJECT: staging
+  IMAGE_NAME: wiki
+
+jobs:
+  build:
+    name: Build & Push
+    runs-on: [self-hosted, k3s, linux, amd64]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set image metadata
+        id: meta
+        run: |
+          SHA_SHORT=$(echo "${{ github.sha }}" | cut -c1-7)
+          echo "sha_tag=sha-${SHA_SHORT}" >> $GITHUB_OUTPUT
+          echo "Image tag: sha-${SHA_SHORT}"
+
+      - name: Disable DEV flag + set version
+        run: |
+          if ! command -v jq &> /dev/null; then
+            sudo apt-get install -y jq || apk add --no-cache jq
+          fi
+          mv package.json pkg-temp.json
+          jq -r '. + {dev:false}' pkg-temp.json > package.json
+          rm pkg-temp.json
+
+      - name: Build image (amd64-only)
+        run: |
+          docker build \
+            --platform linux/amd64 \
+            --provenance=false \
+            -f dev/build/Dockerfile \
+            -t $HARBOR_REGISTRY/$HARBOR_PROJECT/$IMAGE_NAME:${{ steps.meta.outputs.sha_tag }} \
+            -t $HARBOR_REGISTRY/$HARBOR_PROJECT/$IMAGE_NAME:latest \
+            .
+
+      - name: Login to Harbor
+        run: |
+          echo "${{ secrets.HARBOR_PUSH_TOKEN }}" | \
+            docker login --username 'robot$ci-push' --password-stdin \
+            $HARBOR_REGISTRY
+
+      - name: Push to Harbor staging
+        run: |
+          docker push $HARBOR_REGISTRY/$HARBOR_PROJECT/$IMAGE_NAME:${{ steps.meta.outputs.sha_tag }}
+          docker push $HARBOR_REGISTRY/$HARBOR_PROJECT/$IMAGE_NAME:latest
+
+      - name: Clean up
+        if: always()
+        run: |
+          docker rmi $HARBOR_REGISTRY/$HARBOR_PROJECT/$IMAGE_NAME:${{ steps.meta.outputs.sha_tag }} 2>/dev/null || true
+          docker rmi $HARBOR_REGISTRY/$HARBOR_PROJECT/$IMAGE_NAME:latest 2>/dev/null || true
