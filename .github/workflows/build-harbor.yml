@@ -38,7 +38,7 @@ jobs:
 
       - name: Build image (amd64-only)
         run: |
-          DOCKER_BUILDKIT=1 docker build \
+          DOCKER_BUILDKIT=0 docker build \
             -f dev/build/Dockerfile \
             -t $HARBOR_REGISTRY/$HARBOR_PROJECT/$IMAGE_NAME:${{ steps.meta.outputs.sha_tag }} \
             -t $HARBOR_REGISTRY/$HARBOR_PROJECT/$IMAGE_NAME:latest \
