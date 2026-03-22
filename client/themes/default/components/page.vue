@@ -361,7 +361,7 @@ import { StatusIndicator } from 'vue-status-indicator'
 import Tabset from './tabset.vue'
 import NavSidebar from './nav-sidebar.vue'
 import Prism from 'prismjs'
-import mermaid from 'mermaid'
+// mermaid — loaded globally via script tag (self-hosted v11 bundle)
 import { get, sync } from 'vuex-pathify'
 import _ from 'lodash'
 import ClipboardJS from 'clipboard'
@@ -619,11 +619,16 @@ export default {
     // -> Highlight Code Blocks
     Prism.highlightAllUnder(this.$refs.container)
 
-    // -> Render Mermaid diagrams
-    mermaid.mermaidAPI.initialize({
-      startOnLoad: true,
-      theme: this.$vuetify.theme.dark ? `dark` : `default`
-    })
+    // -> Render Mermaid diagrams (self-hosted v11 global)
+    if (typeof window.mermaid !== 'undefined') {
+      window.mermaid.initialize({
+        startOnLoad: false,
+        theme: this.$vuetify.theme.dark ? `dark` : `default`
+      })
+      window.mermaid.run({
+        querySelector: '.mermaid'
+      })
+    }
 
     // -> Handle anchor scrolling
     if (window.location.hash && window.location.hash.length > 1) {

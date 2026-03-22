@@ -70,6 +70,9 @@ html(lang=siteConfig.lang)
       <% } %>
     <% } %>
 
+    //- Mermaid (self-hosted, loaded before app JS)
+    script(type='text/javascript', src='/_assets/vendor/mermaid/11.13.0/mermaid.min.js')
+
     //- JS
     <% for (var index in htmlWebpackPlugin.files.js) { %>
       <% if (htmlWebpackPlugin.files.jsIntegrity) { %>
