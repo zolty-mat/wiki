@@ -36,13 +36,10 @@ jobs:
           jq -r '. + {dev:false}' pkg-temp.json > package.json
           rm pkg-temp.json
 
-      - name: Build image (amd64-only)
-        run: |
-          DOCKER_BUILDKIT=0 docker build \
-            -f dev/build/Dockerfile \
-            -t $HARBOR_REGISTRY/$HARBOR_PROJECT/$IMAGE_NAME:${{ steps.meta.outputs.sha_tag }} \
-            -t $HARBOR_REGISTRY/$HARBOR_PROJECT/$IMAGE_NAME:latest \
-            .
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+        with:
+          driver: docker
 
       - name: Login to Harbor
         run: |
@@ -50,13 +47,17 @@ jobs:
             docker login --username 'robot$ci-push' --password-stdin \
             $HARBOR_REGISTRY
 
-      - name: Push to Harbor staging
+      - name: Build and push image (amd64-only)
         run: |
-          docker push $HARBOR_REGISTRY/$HARBOR_PROJECT/$IMAGE_NAME:${{ steps.meta.outputs.sha_tag }}
-          docker push $HARBOR_REGISTRY/$HARBOR_PROJECT/$IMAGE_NAME:latest
+          docker buildx build \
+            --provenance=false \
+            -f dev/build/Dockerfile \
+            -t $HARBOR_REGISTRY/$HARBOR_PROJECT/$IMAGE_NAME:${{ steps.meta.outputs.sha_tag }} \
+            -t $HARBOR_REGISTRY/$HARBOR_PROJECT/$IMAGE_NAME:latest \
+            --push \
+            .
 
       - name: Clean up
         if: always()
         run: |
-          docker rmi $HARBOR_REGISTRY/$HARBOR_PROJECT/$IMAGE_NAME:${{ steps.meta.outputs.sha_tag }} 2>/dev/null || true
-          docker rmi $HARBOR_REGISTRY/$HARBOR_PROJECT/$IMAGE_NAME:latest 2>/dev/null || true
+          docker logout $HARBOR_REGISTRY 2>/dev/null || true
