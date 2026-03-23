@@ -55,7 +55,7 @@
     "azure-search-client": "3.1.5",
     "bcryptjs-then": "1.0.1",
     "bluebird": "3.7.2",
-    "body-parser": "1.20.1",
+    "body-parser": "1.20.4",
     "chalk": "4.1.0",
     "cheerio": "1.0.0-rc.5",
     "chokidar": "3.5.3",
@@ -176,7 +176,7 @@
     "scim-query-filter-parser": "2.0.4",
     "semver": "7.7.3",
     "serve-favicon": "2.5.1",
-    "simple-git": "3.30.0",
+    "simple-git": "3.33.0",
     "solr-node": "1.2.1",
     "sqlite3": "5.1.7",
     "ssh2": "1.11.0",
@@ -338,7 +338,11 @@
   "resolutions": {
     "apollo-server-express/**/graphql-tools": "4.0.8",
     "graphql": "15.3.0",
-    "passport-saml/**/xml-crypto": "2.1.6"
+    "passport-saml/**/xml-crypto": "2.1.6",
+    "**/underscore": "1.13.8",
+    "**/@babel/traverse": "7.29.0",
+    "**/json5": "2.2.3",
+    "**/node-fetch": "2.6.7"
   },
   "browserslist": [
     "> 1%",
