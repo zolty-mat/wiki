@@ -347,8 +347,8 @@
     "**/braces": "3.0.3",
     "**/path-to-regexp": "0.1.12",
     "**/tar": "7.5.11",
-    "**/minimatch": "3.1.4",
-    "**/axios": "0.30.0",
+    "**/minimatch": "10.2.3",
+    "**/axios": "0.30.3",
     "**/immutable": "3.8.3"
   },
   "browserslist": [
