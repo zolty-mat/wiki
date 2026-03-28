@@ -13,9 +13,28 @@ env:
   IMAGE_NAME: wiki
 
 jobs:
+  test:
+    name: Unit Tests
+    runs-on: [self-hosted, k3s, linux, amd64]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
+
+      - name: Run renderer unit tests
+        run: node_modules/.bin/jest server/modules/rendering/html-mermaid --no-coverage
+
   build:
     name: Build & Push
     runs-on: [self-hosted, k3s, linux, amd64]
+    needs: test
 
     steps:
       - uses: actions/checkout@v4
