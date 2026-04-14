@@ -22,6 +22,37 @@
 
 </div>
 
+## Architecture
+
+> This is a fork of [Requarks/wiki](https://github.com/Requarks/wiki) with a Mermaid 11 upgrade and an MCP server integration for AI-assisted wiki editing.
+
+```mermaid
+%%{init: {'theme': 'base', 'themeVariables': {'primaryColor': '#232F3E', 'primaryTextColor': '#fff', 'primaryBorderColor': '#545B64', 'lineColor': '#545B64'}}}%%
+flowchart TD
+    subgraph CLIENT["Browser Client"]
+        VUE[Vue.js SPA]
+        MERMAID[Mermaid 11\nDiagram Renderer]
+    end
+
+    subgraph SERVER["Node.js Server"]
+        GQL[GraphQL API]
+        RENDER[Page Renderer\nMarkdown + Mermaid]
+        MCP[MCP Server\nAI wiki editing]
+    end
+
+    subgraph DATA["Data Layer"]
+        PG[(PostgreSQL\npage content + metadata)]
+        SEARCH[Search Index]
+    end
+
+    VUE -->|GraphQL queries| GQL
+    VUE --> MERMAID
+    GQL --> RENDER
+    GQL --> PG
+    RENDER --> SEARCH
+    MCP -->|read/write pages| GQL
+```
+
 - **[Official Website](https://js.wiki/)**
 - **[Documentation](https://docs.requarks.io/)**
 - [Requirements](https://docs.requarks.io/install/requirements)
